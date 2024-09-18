@@ -50,28 +50,12 @@ fi
 function _bootstrap_download() {
   local remote_file="$1"
   local local_file="$2"
-
   _bootstrap_echo "  Downloading $remote_file"
-
-  curl -fsL "https://raw.githubusercontent.com/Meng-Heng/shared-sites/$BOOTSTRAP_VERSION/$remote_file" -o "$local_file" || (
+  curl -fs "https://raw.githubusercontent.com/keymanapp/shared-sites/$BOOTSTRAP_VERSION/$remote_file" -o "$local_file" || (
     _bootstrap_echo "FATAL: Failed to download $remote_file"
     exit 3
   )
-}
 
-function _bootstrap_directory_download() {
-  local $remote_file="$1"
-  local $local_file="$2"
-
-  mkdir -p "$local_file"
-  for file in "$(find "$remote_file" -type f)"; do
-    local relative_path="${file#$remote_file/}"
-    local target_file="$local_file/$relative_path"
-
-    mkdir -p "$(dirname "$target_file")"
-    
-    _bootstrap_download "$file" "$target_file"
-  done
 }
 
 function _bootstrap_echo() {
@@ -110,6 +94,7 @@ function bootstrap_configure() {
 #
 function _bootstrap_configure_common() {
   local BOOTSTRAP_COMMON="$BOOTSTRAP_ROOT/_common"
+  local ASSET_LOGOS="assets/sil-logos-2024"
   local COMMON_FILES=(
     builder.inc.sh
     docker.inc.sh
@@ -139,22 +124,9 @@ function _bootstrap_configure_common() {
   done
 
   for img_file in "${IMG_FILES[@]}"; do
-    mkdir -p "$BOOTSTRAP_COMMON/assets/sil-logos-2024/"
-    _bootstrap_download "_common/assets/sil-logos-2024/$img_file" "$BOOTSTRAP_COMMON/assets/sil-logos-2024/$img_file"
+    mkdir -p "$BOOTSTRAP_COMMON/$ASSET_LOGOS/"
+    _bootstrap_download "_common/$ASSET_LOGOS/$img_file" "$BOOTSTRAP_COMMON/$ASSET_LOGOS/$img_file"
   done
-  # for common_file in "${COMMON_FILES[@]}"; do
-  # _bootstrap_echo "Common files: $common_file"
-  #   if [[ "$common_file" == */ ]]; then
-  #     for dir in "_common/$common_file"; do
-  #       _bootstrap_echo "Directoy: $dir"
-  #       cd "$dir"
-  #       _bootstrap_echo "$BOOTSTRAP_COMMON/$dir"
-  #       _bootstrap_download "_common/$dir" "$BOOTSTRAP_COMMON/$dir"
-  #     done
-  #   else
-  #     _bootstrap_download "_common/$common_file" "$BOOTSTRAP_COMMON/$common_file"
-  #   fi
-  # done
 
   _bootstrap_echo "All _common files downloaded"
 }
